@@ -1,0 +1,69 @@
+ssh aja1041@ron.sr.unh.edu
+git version 
+
+
+
+to add file to git hub
+git add testfile.txt
+
+Then git push
+
+don't use sudo "useless"
+
+
+cp /tmp/gen711_project_data/fastp.sh Comparing-Fish-Species-Amongst-US-Estuaries/fastp.sh
+chmod +x ~/fastp.sh
+
+If you are doing fecal transplant proejct.
+cp /tmp/gen711_project_data/fastp-single.sh Comparing-Fish-Species-Amongst-US-Estuaries/fastp-single.sh
+chmod +x ~/fastp-single.sh
+
+
+head fastp.sh
+\
+
+mkdir trimmedfastqs
+
+./fastp.sh 150 /tmp/gen711_project_data/cyano/fastqs  untrimmed_fastqs/
+conda activate qiime2-2022.8
+
+qiime tools import \
+   --type "SampleData[PairedEndSequencesWithQuality]" \
+   --input-format CasavaOneEightSingleLanePerSampleDirFmt \
+   --input-path ~/trimmed_fastqs \
+   --output-path ~/output/a_fishies
+
+"Step 3"
+   qiime cutadapt trim-paired \
+    --i-demultiplexed-sequences ~/output/a_fishies \
+    --p-cores 4 \
+    --p-front-f <the forward primer sequence> \
+    --p-front-r <the reverse primer sequence> \
+    --p-discard-untrimmed \
+    --p-match-adapter-wildcards \
+    --verbose \
+    --o-trimmed-sequences ~/trimmed_fastqs/completedfiles.qza
+
+qiime demux summarize \
+--i-data ~/trimmed_fastqs/completedfiles.qza \
+--o-visualization  ~/visualization/visuals.qzv 
+
+Step 4
+qiime dada2 denoise-paired \
+    --i-demultiplexed-seqs qiime_out/${run}_demux_cutadapt.qza  \
+    --p-trunc-len-f ${trunclenf} \
+    --p-trunc-len-r ${trunclenr} \
+    --p-trim-left-f 0 \
+    --p-trim-left-r 0 \
+    --p-n-threads 4 \
+    --o-denoising-stats ~/denoising/denoising-stats.qza \
+    --o-table ~/table/feature_table.qza \
+    --o-representative-sequences ~/representative-sequences/rep-seqs.qza
+
+qiime metadata tabulate \
+    --m-input-file ~/denoising/denoising-stats.qza \
+    --o-visualization ~/visualization/denoising-stats.qzv
+
+qiime feature-table tabulate-seqs \
+        --i-data ~/mkdir proj-data/rep-seqs.qza \
+        --o-visualization ~/visualization/rep-seqs.qzv
